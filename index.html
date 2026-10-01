@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b0f14">
+<link rel="icon" href="data:,">
+<title>NEON STRIKE 2 — 3D FPS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#0b0f14;font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;color:#e8f1ff;touch-action:none;overscroll-behavior:none}
+:root{--neon:#2ab7ff;--acc:#ff5fa2}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block}
+.hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#cross{position:absolute;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%)}
+#cross i{position:absolute;background:#fff;box-shadow:0 0 3px #000}
+#cross .t,#cross .b{left:50%;margin-left:-1px;width:2px;height:7px}#cross .t{top:0}#cross .b{bottom:0}
+#cross .l,#cross .r{top:50%;margin-top:-1px;width:7px;height:2px}#cross .l{left:0}#cross .r{right:0}
+#cross .dot{left:50%;top:50%;width:2px;height:2px;margin:-1px 0 0 -1px}
+#hit{position:absolute;left:50%;top:50%;width:34px;height:34px;transform:translate(-50%,-50%) rotate(45deg);opacity:0}
+#hit i{position:absolute;background:#fff}
+#hit .a{left:16px;top:0;width:2px;height:10px}#hit .b2{left:16px;bottom:0;width:2px;height:10px}
+#hit .c{top:16px;left:0;width:10px;height:2px}#hit .d{top:16px;right:0;width:10px;height:2px}
+#hit.head i{background:#ff4d5e}#hit.kill i{background:#ffcf4d;width:3px}
+#top{position:absolute;top:max(8px,env(safe-area-inset-top));left:0;right:0;display:flex;justify-content:center;gap:8px;font-weight:800}
+.pill{background:rgba(10,16,24,.55);border:1px solid rgba(120,200,255,.25);border-radius:999px;padding:4px 12px;font-size:13px}
+.pill b{color:var(--neon)}
+#lt{position:absolute;left:max(12px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));width:140px}
+.bar{height:9px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;border:1px solid rgba(255,255,255,.2)}
+#hpfill{height:100%;width:100%;background:linear-gradient(90deg,#29e07a,#b8ff5c);transition:width .15s}
+#arbar{height:5px;margin-top:3px}#arfill{height:100%;width:0;background:linear-gradient(90deg,#3bb0ff,#9fe8ff);transition:width .15s}
+#hptxt{font-size:11px;font-weight:800;margin-top:2px;opacity:.9}
+#radar{margin-top:6px;width:84px;height:84px;border-radius:50%;background:rgba(8,14,22,.55);border:1px solid rgba(120,200,255,.3)}
+#rt{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));text-align:right;font-weight:900}
+#ammoN{font-size:30px;line-height:1}#ammoR{font-size:14px;opacity:.65}
+#wname{font-size:12px;color:var(--neon);letter-spacing:1px}
+#rl{font-size:12px;color:#ffcf4d;height:14px}
+#cash{font-size:14px;color:#ffcf4d;margin-top:2px}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(255,0,30,.75));opacity:0}
+#banner{position:absolute;left:50%;top:27%;transform:translate(-50%,-50%);font-size:32px;font-weight:900;letter-spacing:3px;text-shadow:0 0 18px var(--neon);opacity:0;transition:opacity .4s;white-space:nowrap;text-align:center}
+#banner small{display:block;font-size:14px;letter-spacing:2px;opacity:.8}
+#combo{position:absolute;left:50%;top:62%;transform:translateX(-50%);font-weight:900;font-size:20px;color:#ffcf4d;text-shadow:0 0 10px #ff8a00;opacity:0;transition:opacity .2s}
+#feed{position:absolute;right:max(14px,env(safe-area-inset-right));top:118px;font-size:12px;font-weight:700;text-align:right}
+#feed div{transition:opacity .6s;margin-bottom:2px;text-shadow:0 1px 2px #000}
+#dmgdir{position:absolute;left:50%;top:50%;width:0;height:0}
+.dd{position:absolute;left:-40px;top:-130px;width:80px;height:30px;border-radius:50%/100% 100% 0 0;border-top:6px solid rgba(255,40,60,.9);transform-origin:40px 130px;transition:opacity .8s}
+#nums{position:absolute;inset:0;overflow:hidden}
+.num{position:absolute;font-weight:900;font-size:15px;color:#fff;text-shadow:0 0 3px #000,0 1px 2px #000;transform:translate(-50%,-50%);white-space:nowrap}
+.num.h{color:#ff5f6d;font-size:19px}
+#boss{position:absolute;top:calc(max(8px,env(safe-area-inset-top)) + 34px);left:50%;transform:translateX(-50%);width:min(46vw,380px);text-align:center;display:none}
+#boss .nm{font-size:12px;font-weight:900;letter-spacing:3px;color:#ff5f6d;text-shadow:0 0 8px #f00}
+#boss .bar{height:10px;border-color:#ff5f6d}#bossfill{height:100%;width:100%;background:linear-gradient(90deg,#ff2a4a,#ff9a5c)}
+#scope{position:absolute;inset:0;display:none;background:radial-gradient(circle at center,transparent 0,transparent min(38vh,38vw),rgba(0,0,0,.96) calc(min(38vh,38vw) + 2px))}
+#scope:before,#scope:after{content:"";position:absolute;background:rgba(0,0,0,.85)}
+#scope:before{left:50%;top:0;bottom:0;width:1px}#scope:after{top:50%;left:0;right:0;height:1px}
+#reloadRing{position:absolute;left:50%;top:50%;width:46px;height:46px;transform:translate(-50%,-50%);display:none}
+
+/* 터치 컨트롤 */
+#ctrl{position:fixed;inset:0;z-index:6;display:none}
+#stickBase{position:absolute;width:120px;height:120px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);display:none;pointer-events:none}
+#stickKnob{position:absolute;left:35px;top:35px;width:50px;height:50px;border-radius:50%;background:rgba(95,212,255,.45);border:2px solid rgba(255,255,255,.5)}
+#moveHint{position:absolute;left:max(40px,env(safe-area-inset-left));bottom:max(36px,env(safe-area-inset-bottom));width:110px;height:110px;border-radius:50%;border:2px dashed rgba(255,255,255,.15);pointer-events:none}
+.btn{position:absolute;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;color:#fff;background:rgba(20,30,45,.5);border:2px solid rgba(255,255,255,.3);font-size:11px;line-height:1.1}
+.btn.on{background:rgba(95,212,255,.45);border-color:#5fd4ff}
+.btn.cd{opacity:.4}
+.btn small{font-size:9px;opacity:.8}
+#bFire{width:90px;height:90px;right:max(26px,env(safe-area-inset-right));bottom:max(30px,env(safe-area-inset-bottom));background:rgba(255,60,80,.35);border-color:rgba(255,120,130,.7);font-size:14px}
+#bFire2{width:60px;height:60px;left:max(26px,calc(env(safe-area-inset-left) + 26px));top:max(150px,calc(env(safe-area-inset-top) + 150px));background:rgba(255,60,80,.28);border-color:rgba(255,120,130,.5)}
+#bJump{width:56px;height:56px;right:max(130px,calc(env(safe-area-inset-right) + 130px));bottom:max(24px,env(safe-area-inset-bottom))}
+#bAim{width:52px;height:52px;right:max(124px,calc(env(safe-area-inset-right) + 124px));bottom:max(96px,env(safe-area-inset-bottom))}
+#bReload{width:50px;height:50px;right:max(40px,env(safe-area-inset-right));bottom:max(132px,env(safe-area-inset-bottom))}
+#bSwap{width:54px;height:54px;right:max(100px,calc(env(safe-area-inset-right) + 100px));bottom:max(160px,env(safe-area-inset-bottom));border-radius:14px}
+#bNade{width:50px;height:50px;right:max(198px,calc(env(safe-area-inset-right) + 198px));bottom:max(40px,env(safe-area-inset-bottom))}
+#bDash{width:50px;height:50px;right:max(192px,calc(env(safe-area-inset-right) + 192px));bottom:max(108px,env(safe-area-inset-bottom))}
+#bPause{width:38px;height:38px;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));font-size:13px;border-radius:10px}
+
+/* 화면 */
+.screen{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:radial-gradient(ellipse at center,rgba(12,30,50,.82),rgba(5,8,12,.95));text-align:center;padding:16px;overflow-y:auto}
+.screen h1{font-size:clamp(34px,8vw,64px);font-weight:900;letter-spacing:4px;background:linear-gradient(180deg,#fff,var(--neon));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 16px rgba(42,183,255,.5))}
+.screen p{opacity:.8;font-size:13px;line-height:1.6}
+.big{font-size:19px;font-weight:900;letter-spacing:2px;padding:13px 40px;border-radius:14px;border:none;color:#04121c;background:linear-gradient(180deg,#8fe6ff,#2ab7ff);box-shadow:0 6px 24px rgba(42,183,255,.45);cursor:pointer}
+.small{font-size:13px;font-weight:800;padding:8px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.3);color:#e8f1ff;background:rgba(255,255,255,.08);cursor:pointer}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+.stat{font-size:14px;font-weight:700}.stat b{color:var(--neon);font-size:20px}
+.hidden{display:none!important}
+.settings{display:flex;flex-direction:column;gap:8px;font-size:13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 14px}
+.settings label{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.settings input[type=range]{width:130px}
+.tog{min-width:64px;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;font-weight:800;font-size:12px}
+.tog.on{background:rgba(42,183,255,.35);border-color:#5fd4ff}
+
+/* 상점 */
+#shop{justify-content:flex-start;padding-top:max(14px,env(safe-area-inset-top))}
+#shop .head{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}
+#shop h2{font-size:24px;font-weight:900;letter-spacing:3px}
+#shopCash{font-size:20px;font-weight:900;color:#ffcf4d}
+.sec{width:100%;max-width:900px;text-align:left;font-size:12px;font-weight:900;letter-spacing:2px;color:var(--neon);margin-top:4px}
+.grid{width:100%;max-width:900px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:9px 10px;text-align:left;display:flex;flex-direction:column;gap:4px}
+.card .t{font-weight:900;font-size:14px}.card .d{font-size:11px;opacity:.7;min-height:28px}
+.card .lv{font-size:10px;letter-spacing:2px;color:#ffcf4d}
+.card button{margin-top:auto;padding:7px;border-radius:8px;border:none;font-weight:900;font-size:13px;background:linear-gradient(180deg,#ffe08a,#ffb02a);color:#2a1a00}
+.card button:disabled{background:rgba(255,255,255,.12);color:rgba(255,255,255,.4)}
+.card.owned{border-color:rgba(95,212,255,.5)}
+#shop{gap:8px}#shop .grid:last-of-type{margin-bottom:20px}
+#rotate{position:fixed;inset:0;z-index:30;background:#0b0f14;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;font-weight:800}
+#rotate .ph{width:50px;height:84px;border:4px solid #5fd4ff;border-radius:10px;animation:rot 1.8s infinite ease-in-out}
+@keyframes rot{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div class="hud hidden" id="hud">
+  <div id="scope"></div>
+  <div id="cross"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i><i class="dot"></i></div>
+  <div id="hit"><i class="a"></i><i class="b2"></i><i class="c"></i><i class="d"></i></div>
+  <svg id="reloadRing" viewBox="0 0 46 46"><circle cx="23" cy="23" r="19" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="3"/><circle id="rrc" cx="23" cy="23" r="19" fill="none" stroke="#ffcf4d" stroke-width="3" stroke-dasharray="119.4" stroke-dashoffset="119.4" transform="rotate(-90 23 23)"/></svg>
+  <div id="nums"></div>
+  <div id="vig"></div>
+  <div id="dmgdir"></div>
+  <div id="lt">
+    <div class="bar"><div id="hpfill"></div></div>
+    <div class="bar" id="arbar"><div id="arfill"></div></div>
+    <div id="hptxt">HP 100</div>
+    <canvas id="radar" width="168" height="168"></canvas>
+  </div>
+  <div id="top"><div class="pill">WAVE <b id="wave">1</b></div><div class="pill">적 <b id="left">0</b></div><div class="pill">점수 <b id="score">0</b></div></div>
+  <div id="boss"><div class="nm" id="bossName">⚠ OVERLORD</div><div class="bar"><div id="bossfill"></div></div></div>
+  <div id="rt"><div id="wname">라이플</div><div><span id="ammoN">30</span> <span id="ammoR">/ ∞</span></div><div id="rl"></div><div id="cash">◆ 0</div></div>
+  <div id="feed"></div>
+  <div id="combo"></div>
+  <div id="banner">WAVE 1</div>
+</div>
+
+<div id="ctrl">
+  <div id="moveHint"></div>
+  <div id="stickBase"><div id="stickKnob"></div></div>
+  <div class="btn" id="bFire">FIRE</div>
+  <div class="btn" id="bFire2">FIRE</div>
+  <div class="btn" id="bJump">JUMP</div>
+  <div class="btn" id="bReload">R</div>
+  <div class="btn" id="bAim">AIM</div>
+  <div class="btn" id="bSwap"><span id="swapIcon">AR</span><small>교체</small></div>
+  <div class="btn" id="bNade">💣<small id="nadeN">2</small></div>
+  <div class="btn" id="bDash">DASH</div>
+  <div class="btn" id="bPause">II</div>
+</div>
+
+<div class="screen" id="menu">
+  <h1>NEON STRIKE 2</h1>
+  <p>무기를 모으고 강화해서 끝없는 드론 군단과 보스를 막아내라!</p>
+  <div class="row"><div class="stat">최고 점수 <b id="best">0</b></div><div class="stat">최고 웨이브 <b id="bestW">0</b></div></div>
+  <button class="big" id="play">게임 시작</button>
+  <div class="row"><button class="small" id="openSet">⚙ 설정</button><button class="small" id="openHelp">❓ 조작법</button></div>
+  <div class="settings hidden" id="setBox1"></div>
+  <p class="hidden" id="help" style="font-size:12px;opacity:.75">📱 왼쪽 드래그 이동(끝까지 밀면 달리기) · 오른쪽 드래그 시점<br>FIRE 누른 채 드래그하면 조준하면서 사격 · 💣 수류탄 · DASH 순간 돌진 · 교체 버튼으로 무기 변경<br>💻 WASD · 마우스 · 클릭 사격 · 우클릭 조준 · R 재장전 · Space 점프 · Shift 달리기<br>Q/휠/1~5 무기 교체 · G 수류탄 · E 대시 · ESC 일시정지</p>
+</div>
+
+<div class="screen hidden" id="pause">
+  <h1 style="font-size:42px">일시정지</h1>
+  <div class="settings" id="setBox2"></div>
+  <button class="big" id="resume">계속하기</button>
+  <button class="small" id="quit">메인으로</button>
+</div>
+
+<div class="screen hidden" id="shop">
+  <div class="head"><h2>🛒 보급 상점</h2><div id="shopCash">◆ 0</div><button class="big" id="shopGo" style="padding:9px 26px;font-size:16px">다음 웨이브 ▶</button></div>
+  <p id="shopInfo" style="font-size:12px"></p>
+  <div class="sec">무기</div><div class="grid" id="gWeap"></div>
+  <div class="sec">강화</div><div class="grid" id="gUp"></div>
+  <div class="sec">보급품</div><div class="grid" id="gItem"></div>
+</div>
+
+<div class="screen hidden" id="over">
+  <h1 style="font-size:46px">GAME OVER</h1>
+  <div class="row"><div class="stat">도달 웨이브 <b id="oWave">1</b></div><div class="stat">점수 <b id="oScore">0</b></div></div>
+  <div class="row"><div class="stat">처치 <b id="oKills">0</b></div><div class="stat">헤드샷 <b id="oHead">0</b></div><div class="stat">최대 콤보 <b id="oCombo">0</b></div><div class="stat">보스 처치 <b id="oBoss">0</b></div></div>
+  <div class="stat" id="oBest" style="color:#ffcf4d"></div>
+  <button class="big" id="again">다시 하기</button>
+  <button class="small" id="toMenu">메인으로</button>
+</div>
+
+<div id="rotate"><div class="ph"></div>화면을 가로로 돌려주세요<br><span style="font-size:12px;opacity:.6">(세로로도 플레이 가능 — 화면을 탭하면 계속)</span></div>
+
+<script type="module" src="./game.js"></script>
+</body>
+</html>
